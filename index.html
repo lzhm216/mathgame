@@ -103,7 +103,8 @@
             line-height: 1.3;
         }
         .score-summary .app-score.s24 { color: var(--accent-24); }
-        .score-summary .app-score.s99 { color: var(--accent-99); }.score-summary { margin-top: 36px; }
+        .score-summary .app-score.s99 { color: var(--accent-99); }
+        .score-summary .app-score.s-total { color: var(--text); font-size: 1.25rem; }.score-summary { margin-top: 36px; }
         .footer { margin-top: 40px; text-align: center; font-size: 0.78rem; color: rgba(148, 163, 184, 0.5); }
     </style>
 </head>
@@ -125,14 +126,14 @@
                     <span class="tag">三态主题</span>
                 </div>
             </a>
-            <a class="app-card card-99" href="99-table.html">
-                <div class="app-icon">📐</div>
-                <h2>大九九乘法表</h2>
-                <p class="desc">11×1 到 19×9 大九九乘法表展示，<br>附带交互测验，巩固记忆。</p>
+            <a class="app-card card-99" href="99-quiz.html">
+                <div class="app-icon">🎯</div>
+                <h2>九九挑战</h2>
+                <p class="desc">大九九乘法表交互测验，逐题作答，<br>答对自动进入下一题，积分随难度递增。</p>
                 <div class="tags">
-                    <span class="tag">81 条口诀</span>
-                    <span class="tag">随机测验</span>
-                    <span class="tag">导出图片</span>
+                    <span class="tag">81 道全随机</span>
+                    <span class="tag">难度积分</span>
+                    <span class="tag">每日上限</span>
                 </div>
             </a>        </div>
 
@@ -142,8 +143,12 @@
                 <div class="app-score s24" id="score24">-</div>
             </div>
             <div class="item">
-                <div class="app-label">🎯 闯关</div>
+                <div class="app-label">🎯 九九</div>
                 <div class="app-score s99" id="score99">-</div>
+            </div>
+            <div class="item">
+                <div class="app-label">📊 总计</div>
+                <div class="app-score s-total" id="scoreTotal">-</div>
             </div>
         </div>
         <div class="footer">数学小工具 · 导航页</div>
@@ -158,6 +163,8 @@
     }
     document.getElementById('score24').textContent = loadScore('math24_save');
     document.getElementById('score99').textContent = loadScore('math99_save');
+    var s24 = loadScore('math24_save'), s99 = loadScore('math99_save');
+    document.getElementById('scoreTotal').textContent = (typeof s24 === 'number' && typeof s99 === 'number') ? s24 + s99 : '-';
 })();
 </script></html>
 
