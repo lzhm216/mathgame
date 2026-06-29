@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大九九乘法表 (11×1 ~ 19×9)</title>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js">
+    </script>
+    <style>
+        :root {
+            --bg: #f0f4f8;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --text-secondary: #5a6c7d;
+            --border: #dde4ea;
+            --shadow: 0 4px 24px rgba(0,0,0,0.08);
+            --radius: 12px;
+            --accent: #3498db;
+            --accent-hover: #2980b9;
+            --toast-bg: #2c3e50;
+            --toast-text: #ffffff;
+            --label-num: #444;
+            --square-result: #e67e22;
+        }
+
+        /* 夜间模式 */
+        [data-theme="dark"] {
+            --bg: #1a1a2e;
+            --card-bg: #252540;
+            --text: #e0e0e0;
+            --text-secondary: #a0a8b8;
+            --border: #3a3a55;
+            --shadow: 0 4px 24px rgba(0,0,0,0.35);
+            --accent: #5dade2;
+            --accent-hover: #85c1e9;
+            --toast-bg: #e0e0e0;
+            --toast-text: #1a1a2e;
+            --label-num: #ccc;
+            --square-result: #f0b34b;
+        }
+
+        /* 夜间模式下按钮微调 */
+        [data-theme="dark"] .btn-outline {
+            background: #252540;
+            color: var(--accent);
+        }
+        [data-theme="dark"] .btn-outline:hover {
+            background: #2e2e50;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px;
+            color: var(--text);
+        }
+
+        /* ─── 主容器：与表格等宽 ─── */
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            width: fit-content;
+            max-width: 100%;
+        }
+
+        /* ─── Header ─── */
+        .header {
+            margin-bottom: 28px;
+        }
+        .header .subtitle {
+            text-align: center;
+        }
+        .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 8px;
+        }
+        .header-row .spacer {
+            width: 42px; /* 与图标按钮宽度相当，保证标题居中 */
+            flex-shrink: 0;
+        }
+        .header-row h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 0.02em;
+            text-align: center;
+            flex: 1;
+        }
+        .header .subtitle {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* ─── Card ─── */
+        .table-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 28px 24px 20px;
+            max-width: 100%;
+            overflow: auto;
+        }
+
+        /* ─── Table ─── */
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin: 0 auto;
+            font-size: 0.92rem;
+            white-space: nowrap;
+        }
+
+        /* 左上角 */
+        .corner-cell {
+            background: var(--header-bg);
+            color: var(--header-text);
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 10px 14px;
+            border: 1px solid var(--header-bg);
+            min-width: 56px;
+            letter-spacing: 0.05em;
+        }
+
+        /* 列头（1~9） */
+        th.col-head {
+            background: var(--header-bg);
+            color: var(--header-text);
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-align: center;
+            padding: 10px 8px;
+            border: 1px solid var(--header-bg);
+            min-width: 56px;
+        }
+
+        /* 行头（11~19）—— 保留但不再使用 */
+        th.row-head {
+            background: var(--row-head-bg);
+            color: var(--row-head-text);
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-align: center;
+            padding: 8px 12px;
+            border: 1px solid #2c3e50;
+            min-width: 48px;
+        }
+
+        /* 每行首单元格——充当行标识/列头 */
+        td.row-label {
+            text-align: center;
+            padding: 6px 10px;
+            font-weight: 700;
+            vertical-align: middle;
+            min-width: 44px;
+            border: 2px solid transparent;
+        }
+        td.row-label .label-num {
+            font-size: 1.15rem;
+            color: var(--label-num);
+        }
+
+        /* 数据单元格 */
+        td {
+            text-align: center;
+            padding: 8px 14px;
+            min-width: 64px;
+            border: 1px solid var(--border);
+            font-variant-numeric: tabular-nums;
+            font-family: "SF Mono", "Consolas", "Menlo", "PingFang SC", monospace;
+            color: var(--text);
+            cursor: default;
+            vertical-align: middle;
+        }
+        td .formula {
+            font-size: 0.92rem;
+            color: var(--text-secondary);
+            line-height: 1.3;
+        }
+        td .result {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.4;
+        }
+
+        /* ─── 每行颜色：首单元格背景，其余单元格边框 ─── */
+        tr.r11 > td:first-of-type { background: #FFE4E1; }
+        tr.r11 > td              { border-color: #FFE4E1; }
+
+        tr.r12 > td:first-of-type { background: #FFD6E0; }
+        tr.r12 > td              { border-color: #FFD6E0; }
+
+        tr.r13 > td:first-of-type { background: #FFE4C4; }
+        tr.r13 > td              { border-color: #FFE4C4; }
+
+        tr.r14 > td:first-of-type { background: #FFE066; }
+        tr.r14 > td              { border-color: #FFE066; }
+
+        tr.r15 > td:first-of-type { background: #C8F7C5; }
+        tr.r15 > td              { border-color: #C8F7C5; }
+
+        tr.r16 > td:first-of-type { background: #C5F0F6; }
+        tr.r16 > td              { border-color: #C5F0F6; }
+
+        tr.r17 > td:first-of-type { background: #CCE0FF; }
+        tr.r17 > td              { border-color: #CCE0FF; }
+
+        tr.r18 > td:first-of-type { background: #E8D5F5; }
+        tr.r18 > td              { border-color: #E8D5F5; }
+
+        tr.r19 > td:first-of-type { background: #FFD1DC; }
+        tr.r19 > td              { border-color: #FFD1DC; }
+
+        /* 完全平方数高亮（叠加在行颜色之上） */
+        td.square .result {
+            color: var(--square-result);
+            font-weight: 900;
+        }
+
+
+        /* ─── 主题切换按钮 ─── */
+        .theme-toggle {
+            padding: 6px 16px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: inherit;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .theme-toggle:hover {
+            background: var(--bg);
+        }
+
+        /* ─── Buttons ─── */
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 22px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+            font-family: inherit;
+            letter-spacing: 0.02em;
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+        a.btn { text-decoration: none; display: inline-flex; color: inherit; }
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 4px 14px rgba(52,152,219,0.35);
+        }
+        .btn-outline {
+            background: #fff;
+            color: var(--accent);
+            border: 2px solid var(--accent);
+        }
+        .btn-outline:hover {
+            background: #eaf4fd;
+        }
+
+        /* ─── Toast ─── */
+        .toast {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--toast-bg);
+            color: var(--toast-text);
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.3s, opacity 0.3s;
+            z-index: 9999;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* ─── Footer ─── */
+        .footer {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+                /* ─── Score Bar ─── */
+        .score-bar {
+            margin-bottom: 20px;
+        }
+        .score-bar-inner {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .score-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 6px 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 80px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .score-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        .score-value {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--accent);
+            line-height: 1.3;
+        }
+        [data-theme="dark"] .score-value {
+            color: #5dade2;
+        }
+/* ─── Quiz Panel ─── */
+        .quiz-panel {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 28px 24px 20px;
+            margin-top: 24px;
+            max-width: 100%;
+        }
+        .quiz-header h3 {
+            font-size: 1.3rem;
+            color: var(--text);
+            margin-bottom: 4px;
+            text-align: center;
+        }
+        .quiz-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .quiz-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: center;
+        }
+        .quiz-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+            min-width: 170px;
+            transition: border-color 0.3s, background 0.3s;
+        }
+        .quiz-item.correct {
+            border-color: #27ae60;
+            background: #eafaf1;
+        }
+        .quiz-item.wrong {
+            border-color: #e74c3c;
+            background: #fdedec;
+        }
+        .quiz-item .q-formula {
+            white-space: nowrap;
+            font-family: "SF Mono", "Consolas", "Menlo", monospace;
+            font-size: 1.05rem;
+            color: var(--text);
+        }
+        .quiz-item .q-equals {
+            color: var(--text-secondary);
+        }
+        .quiz-item input {
+            width: 72px;
+            padding: 6px 10px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-align: center;
+            font-family: "SF Mono", "Consolas", "Menlo", monospace;
+            color: var(--text);
+            background: var(--card-bg);
+            transition: border-color 0.2s;
+        }
+        .quiz-item input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(52,152,219,0.15);
+        }
+        .quiz-item input:disabled {
+            opacity: 0.7;
+        }
+        .quiz-item .q-mark {
+            font-size: 1.2rem;
+            font-weight: 900;
+            min-width: 24px;
+            text-align: center;
+        }
+        .quiz-item.correct .q-mark { color: #27ae60; }
+        .quiz-item.wrong .q-mark { color: #e74c3c; }
+        .quiz-item .q-correct-answer {
+            display: none;
+            font-size: 0.85rem;
+            color: #e74c3c;
+            white-space: nowrap;
+        }
+        .quiz-item.wrong .q-correct-answer {
+            display: inline;
+        }
+        .quiz-result {
+            text-align: center;
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+        .quiz-result.perfect {
+            background: #eafaf1;
+            color: #27ae60;
+        }
+        .quiz-result.good {
+            background: #fef9e7;
+            color: #b7950b;
+        }
+        .quiz-result.try-again {
+            background: #fdedec;
+            color: #c0392b;
+        }
+        .quiz-actions {
+            margin-top: 20px;
+        }
+
+        /* ─── Print / Export style ─── */
+        @media print {
+            body { background: #fff; padding: 0; }
+            .btn-row, .toast, .footer { display: none !important; }
+            .table-card {
+                box-shadow: none;
+                border-radius: 0;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div class="header">
+            <div class="header-row">
+                <a href="index.html" class="back-link" title="返回主页"><svg viewBox="0 0 24 24" class="home-icon" width="20" height="20" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></a>
+                <h1>📐 大九九乘法表</h1>
+                <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="切换夜间/日间模式">
+                    🌙
+                </button>
+            </div>
+            <p class="subtitle">11×1 ~ 19×9&emsp;|&emsp;共 81 条</p>
+        </div>
+
+                <!-- 积分栏 -->
+        <div class="score-bar">
+            <div class="score-bar-inner">
+                <div class="score-item">
+                    <span class="score-label">今日积分</span>
+                    <span class="score-value" id="quizScoreToday">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">总积分</span>
+                    <span class="score-value" id="quizScoreTotal">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">完美连击</span>
+                    <span class="score-value" id="quizPerfectStreak">0</span>
+                </div>
+            </div>
+        </div>
+<!-- 这是导出区域 -->
+        <div class="table-card" id="exportArea">
+            <div class="table-wrapper">
+                <table id="multTable"></table>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-primary" onclick="exportAsPNG()">
+                📷 导出为图片 (PNG)
+            </button>
+            <a class="btn btn-primary" href="99-quiz.html">
+                🎯 逐题闯关
+            </a>
+        </div>
+
+        <!-- 测验面板 -->
+        <div class="quiz-panel" id="quizPanel" style="display:none;">
+            <div class="quiz-header">
+                <h3>🧮 大九九测验</h3>
+                <p class="quiz-subtitle">请填写每题答案，提交后查看成绩</p>
+            </div>
+            <div class="quiz-items" id="quizItems"></div>
+            <div class="quiz-result" id="quizResult" style="display:none;"></div>
+            <div class="btn-row quiz-actions">
+                <button class="btn btn-primary" id="quizSubmitBtn" onclick="checkQuiz()">✅ 提交答案</button>
+                <button class="btn btn-outline" id="quizResetBtn" onclick="resetQuiz()" style="display:none;">🔄 重新测验</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        大九九乘法表 · 11×1 到 19×9
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ─── 生成表格 ───
+        function buildTable() {
+            const table = document.getElementById('multTable');
+
+            // 无表头，直接数据行（11~19）
+            let html = '<tbody>';
+
+            for (let row = 11; row <= 19; row++) {
+                html += `<tr class="r${row}">`;
+                // 首单元格作"列头"，显示行号大数
+                html += `<td class="row-label"><span class="label-num">${row}</span></td>`;
+                for (let col = 1; col <= 9; col++) {
+                    const product = row * col;
+                    const formula = `${row} × ${col} = ${product}`;
+                    const squareClass =
+                        (row === col) ? ' square' : '';
+                    html += `<td class="${squareClass.trim()}" data-formula="${formula}"><div class="formula">${row}×${col}</div><div class="result">${product}</div></td>`;
+                }
+                html += '</tr>';
+            }
+            html += '</tbody>';
+            table.innerHTML = html;
+        }
+
+        // ─── Toast ───
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(t._tid);
+            t._tid = setTimeout(() => t.classList.remove('show'), 2000);
+        }
+
+        // ─── 导出 PNG ───
+        async function exportAsPNG() {
+            const el = document.getElementById('exportArea');
+            try {
+                const canvas = await html2canvas(el, {
+                    scale: 2,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                });
+                // 下载
+                const link = document.createElement('a');
+                link.download = '大九九乘法表_11到19.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                showToast('✅ 图片已导出！');
+            } catch (err) {
+                // html2canvas 未加载时提示
+                if (err instanceof ReferenceError) {
+                    showToast('⚠️ 正在加载导出库，请稍后再试…');
+                    return;
+                }
+                console.error(err);
+                showToast('❌ 导出失败，请重试');
+            }
+        }
+
+        // ─── 测验 ───
+        let quizQuestions = [];
+
+        // 生成所有 81 道题：11~19 × 1~9
+        function generateAllQuestions() {
+            const all = [];
+            for (let r = 11; r <= 19; r++) {
+                for (let c = 1; c <= 9; c++) {
+                    all.push({ row: r, col: c, answer: r * c });
+                }
+            }
+            return all;
+        }
+
+        // Fisher-Yates 洗牌
+        function shuffle(arr) {
+            const a = arr.slice();
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function startQuiz() {
+            const all = generateAllQuestions();
+            quizQuestions = shuffle(all).slice(0, 5);
+
+            const panel = document.getElementById('quizPanel');
+            const itemsDiv = document.getElementById('quizItems');
+            const resultDiv = document.getElementById('quizResult');
+            const submitBtn = document.getElementById('quizSubmitBtn');
+            const resetBtn = document.getElementById('quizResetBtn');
+
+            // 重置状态
+            resultDiv.style.display = 'none';
+            resultDiv.className = 'quiz-result';
+            resultDiv.innerHTML = '';
+            submitBtn.style.display = '';
+            resetBtn.style.display = 'none';
+
+            let html = '';
+            quizQuestions.forEach((q, i) => {
+                html += `
+                <div class="quiz-item" id="qItem${i}">
+                    <span class="q-formula">${q.row} × ${q.col}</span>
+                    <span class="q-equals">=</span>
+                    <input type="number" id="qInput${i}" placeholder="?" autocomplete="off">
+                    <span class="q-mark" id="qMark${i}"></span>
+                    <span class="q-correct-answer" id="qAns${i}">(答案: ${q.answer})</span>
+                </div>`;
+            });
+            itemsDiv.innerHTML = html;
+            panel.style.display = 'block';
+
+            // 滚动到测验面板
+            panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // 聚焦第一个输入框
+            setTimeout(() => {
+                const firstInput = document.getElementById('qInput0');
+                if (firstInput) firstInput.focus();
+            }, 300);
+
+            // 回车键快速提交
+            panel.onkeydown = function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    checkQuiz();
+                }
+            };
+        }
+
+        function checkQuiz() {
+            let correctCount = 0;
+            const total = quizQuestions.length;
+
+            for (let i = 0; i < total; i++) {
+                const input = document.getElementById('qInput' + i);
+                const item = document.getElementById('qItem' + i);
+                const mark = document.getElementById('qMark' + i);
+                const ansSpan = document.getElementById('qAns' + i);
+                const userAnswer = parseInt(input.value, 10);
+
+                if (userAnswer === quizQuestions[i].answer) {
+                    correctCount++;
+                    item.classList.add('correct');
+                    item.classList.remove('wrong');
+                    mark.textContent = '✓';
+                } else {
+                    item.classList.add('wrong');
+                    item.classList.remove('correct');
+                    mark.textContent = '✗';
+                    ansSpan.textContent = '(答案: ' + quizQuestions[i].answer + ')';
+                }
+                input.disabled = true;
+            }
+
+                        // ── 积分计算 ──
+            const POINTS_PER_Q = 5;
+            const PERFECT_BONUS = 10;
+            let earned = correctCount * POINTS_PER_Q;
+            if (correctCount === total) {
+                earned += PERFECT_BONUS;
+                QUIZ_SCORE.perfectStreak++;
+            } else {
+                QUIZ_SCORE.perfectStreak = 0;
+            }
+            QUIZ_SCORE.scoreToday += earned;
+            QUIZ_SCORE.scoreTotal += earned;
+            saveQuizScore();
+            updateScoreUI();
+            // ── 积分计算结束 ──
+// 显示结果
+            const resultDiv = document.getElementById('quizResult');
+            resultDiv.style.display = 'block';
+
+            let cls, emoji, msg;
+            if (correctCount === total) {
+                cls = 'perfect';
+                emoji = '🌟';
+                msg = '太棒了！全部正确，你是大九九小达人！';
+            } else if (correctCount >= 3) {
+                cls = 'good';
+                emoji = '💪';
+                msg = '不错，继续加油！再练练会更好！';
+            } else {
+                cls = 'try-again';
+                emoji = '📚';
+                msg = '别灰心，多看看乘法表再来挑战吧！';
+            }
+            resultDiv.className = 'quiz-result ' + cls;
+            resultDiv.innerHTML = `${emoji} 得分：<strong>${correctCount} / ${total}</strong>&emsp;${msg}`;
+
+            // 切换按钮
+            document.getElementById('quizSubmitBtn').style.display = 'none';
+            document.getElementById('quizResetBtn').style.display = '';
+
+            showToast(
+                correctCount === total ? '🎉 满分 +' + earned + '分！太厉害了！' :
+                correctCount >= 3 ? '👍 正确 ' + correctCount + '/' + total + ' 题，+'+ earned +'分！' :
+                '💪 正确 ' + correctCount + '/' + total + ' 题，+'+ earned +'分！'
+            );
+        }
+
+        function resetQuiz() {
+            document.getElementById('quizPanel').style.display = 'none';
+            startQuiz();
+        }
+
+        // ─── 夜间模式切换 ───
+        function toggleTheme() {
+            const html = document.documentElement;
+            const btn = document.getElementById('themeToggle');
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                btn.innerHTML = '🌙';
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                btn.innerHTML = '☀️';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // 初始化主题
+        (function initTheme() {
+            const saved = localStorage.getItem('theme');
+            if (saved === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.getElementById('themeToggle').innerHTML = '☀️';
+            }
+        })();
+
+        // ─── 启动 ───
+
+        // ─── 积分系统（源自 24 点积分机制）───
+        const QUIZ_SCORE = {
+            scoreToday: 0,
+            scoreTotal: 0,
+            perfectStreak: 0
+        };
+
+        function getDateString() {
+            const d = new Date();
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function saveQuizScore() {
+            const todayStr = getDateString();
+            let data = { scoreTotal: 0, perfectStreak: 0, dailyScores: {} };
+            try {
+                const raw = localStorage.getItem('math99_save');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    data.dailyScores = parsed.dailyScores || {};
+                }
+            } catch(e) {}
+            data.scoreTotal = QUIZ_SCORE.scoreTotal;
+            data.perfectStreak = QUIZ_SCORE.perfectStreak;
+            data.dailyScores[todayStr] = QUIZ_SCORE.scoreToday;
+            localStorage.setItem('math99_save', JSON.stringify(data));
+        }
+
+        function loadQuizScore() {
+            try {
+                const raw = localStorage.getItem('math99_save');
+                if (raw) {
+                    const data = JSON.parse(raw);
+                    QUIZ_SCORE.scoreTotal = data.scoreTotal || 0;
+                    QUIZ_SCORE.perfectStreak = data.perfectStreak || 0;
+                    const todayStr = getDateString();
+                    const daily = data.dailyScores || {};
+                    QUIZ_SCORE.scoreToday = daily[todayStr] || 0;
+                }
+            } catch(e) { console.warn("无法加载积分存档"); }
+        }
+
+        function updateScoreUI() {
+            document.getElementById('quizScoreToday').textContent = QUIZ_SCORE.scoreToday;
+            document.getElementById('quizScoreTotal').textContent = QUIZ_SCORE.scoreTotal;
+            document.getElementById('quizPerfectStreak').textContent = QUIZ_SCORE.perfectStreak;
+        }
+
+        buildTable();
+
+        // ─── 初始化积分 ───
+        loadQuizScore();
+        updateScoreUI();
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

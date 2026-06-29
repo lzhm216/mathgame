@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数学小工具 · 导航页</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b0f19;
+            --card-bg: rgba(22, 30, 49, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-24: #3b82f6;
+            --accent-99: #f59e0b;
+            --glow-24: rgba(59, 130, 246, 0.25);
+            --glow-99: rgba(245, 158, 11, 0.25);
+            --font: 'Outfit', 'Noto Sans SC', sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            background-image: radial-gradient(at 20% 30%, rgba(59, 130, 246, 0.06) 0px, transparent 50%), radial-gradient(at 80% 70%, rgba(245, 158, 11, 0.06) 0px, transparent 50%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            padding: 24px;
+        }
+        .container { max-width: 680px; width: 100%; }
+        .header { text-align: center; margin-bottom: 48px; }
+        .header .icon-row { font-size: 36px; margin-bottom: 12px; display: flex; justify-content: center; gap: 12px; }
+        .header h1 {
+            font-size: 2rem; font-weight: 800; letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #3b82f6, #f59e0b);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .header p { color: var(--text-secondary); font-size: 0.95rem; margin-top: 6px; font-weight: 400; }
+        .apps { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 520px) {
+            .apps { grid-template-columns: 1fr; gap: 16px; }
+            .header { margin-bottom: 32px; }
+            .header h1 { font-size: 1.6rem; }
+        }
+        .app-card {
+            background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px;
+            padding: 32px 24px; text-decoration: none; color: inherit;
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+            backdrop-filter: blur(16px);
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s, border-color 0.3s;
+            cursor: pointer; position: relative; overflow: hidden;
+        }
+        .app-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 20px; opacity: 0; transition: opacity 0.3s; }
+        .app-card.card-24::before { background: radial-gradient(ellipse at 50% 0%, rgba(59, 130, 246, 0.12), transparent 70%); }
+        .app-card.card-99::before { background: radial-gradient(ellipse at 50% 0%, rgba(245, 158, 11, 0.12), transparent 70%); }
+        .app-card:hover { transform: translateY(-6px); }
+        .app-card.card-24:hover { border-color: rgba(59, 130, 246, 0.3); box-shadow: 0 20px 40px -12px var(--glow-24); }
+        .app-card.card-24:hover::before { opacity: 1; }
+        .app-card.card-99:hover { border-color: rgba(245, 158, 11, 0.3); box-shadow: 0 20px 40px -12px var(--glow-99); }
+        .app-card.card-99:hover::before { opacity: 1; }
+
+        .app-icon { font-size: 48px; margin-bottom: 16px; position: relative; z-index: 1; }
+        .app-card h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; position: relative; z-index: 1; }
+        .app-card.card-24 h2 { color: var(--accent-24); }
+        .app-card.card-99 h2 { color: var(--accent-99); }
+        .app-card .desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; position: relative; z-index: 1; }
+        .app-card .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; justify-content: center; position: relative; z-index: 1; }
+        .app-card .tag { font-size: 0.7rem; padding: 3px 10px; border-radius: 20px; font-weight: 600; letter-spacing: 0.3px; }
+        .card-24 .tag { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.2); }
+        .card-99 .tag { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.2); }
+        .footer { margin-top: 40px; text-align: center; font-size: 0.78rem; color: rgba(148, 163, 184, 0.5); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon-row">🧮⚡</div>
+            <h1>数学小工具</h1>
+            <p>选择你想打开的应用，开始数学之旅</p>
+        </div>
+        <div class="apps">
+            <a class="app-card card-24" href="game24.html">
+                <div class="app-icon">⚡</div>
+                <h2>极速 24 点</h2>
+                <p class="desc">经典益智数学游戏。用给定的 4 张扑克牌，<br>通过加减乘除和括号，算出 24。</p>
+                <div class="tags">
+                    <span class="tag">多解积分</span>
+                    <span class="tag">三级难度</span>
+                    <span class="tag">三态主题</span>
+                </div>
+            </a>
+            <a class="app-card card-99" href="99-table.html">
+                <div class="app-icon">📐</div>
+                <h2>大九九乘法表</h2>
+                <p class="desc">11×1 到 19×9 大九九乘法表展示，<br>附带交互测验，巩固记忆。</p>
+                <div class="tags">
+                    <span class="tag">81 条口诀</span>
+                    <span class="tag">随机测验</span>
+                    <span class="tag">导出图片</span>
+                </div>
+            </a>
+        <div class="footer">数学小工具 · 导航页</div>
+    </div>
+</body>
+</html>
+
