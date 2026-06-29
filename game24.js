@@ -767,24 +767,32 @@ function verifySolution() {
 
         let ptsEarned = 0;
         if (GAME_STATE.foundSolutions.length === 1) {
-            // 本题首个正确答案
             ptsEarned = baseScore;
             GAME_STATE.streak++;
-            updateFeedback(`恭喜！首答正确，积分 +${ptsEarned}！`, "success");
-            triggerCelebration();
         } else {
-            // 本题额外正确答案
             ptsEarned = extraScore;
-            updateFeedback(`厉害！解锁额外解法，积分 +${ptsEarned}！`, "success");
-            triggerCelebration();
         }
 
-        GAME_STATE.scoreToday += ptsEarned;
-        GAME_STATE.scoreTotal += ptsEarned;
+        // 每日积分上限 200 分
+        const DAILY_MAX = 200;
+        const room = Math.max(0, DAILY_MAX - GAME_STATE.scoreToday);
+        const actualPts = Math.min(ptsEarned, room);
+
+        if (actualPts > 0) {
+            if (GAME_STATE.foundSolutions.length === 1) {
+                updateFeedback(`恭喜！首答正确，积分 +${actualPts}！`, "success");
+            } else {
+                updateFeedback(`厉害！解锁额外解法，积分 +${actualPts}！`, "success");
+            }
+            triggerCelebration();
+            GAME_STATE.scoreToday += actualPts;
+            GAME_STATE.scoreTotal += actualPts;
+        } else {
+            updateFeedback(`今日积分已达 200 上限`, "normal");
+        }
 
         // 保存进度
         saveGameProgress();
-
         // 按钮特效反馈
         const checkBtn = document.getElementById('btn-check');
         checkBtn.classList.add('correct-pulse');

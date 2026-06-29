@@ -514,20 +514,30 @@
                 input.className = 'correct';
                 input.disabled = true;
                 document.getElementById('submitBtn').disabled = true;
-                feedback.textContent = '✅ 正确！' + q.row + ' × ' + q.col + ' = ' + q.answer;
-                feedback.className = 'feedback correct';
+                const POINTS = Math.min(10, Math.max(2, Math.floor((q.row + q.col) / 2) - 4));
 
-                // 积分计算
-                const POINTS = 5;
-                QUIZ_SCORE.scoreToday += POINTS;
-                QUIZ_SCORE.scoreTotal += POINTS;
-                QUIZ_SCORE.streak++;
-                sessionEarned += POINTS;
-                saveQuizScore();
-                updateScoreUI();
+                // 每日积分上限 200 分
+                const DAILY_MAX = 200;
+                const room = Math.max(0, DAILY_MAX - QUIZ_SCORE.scoreToday);
+                const actualPts = Math.min(POINTS, room);
 
-                showToast('🎉 +' + POINTS + ' 分！');
-
+                if (actualPts > 0) {
+                    feedback.textContent = '✅ 正确！' + q.row + ' × ' + q.col + ' = ' + q.answer + ' (+' + actualPts + '分)';
+                    feedback.className = 'feedback correct';
+                    QUIZ_SCORE.scoreToday += actualPts;
+                    QUIZ_SCORE.scoreTotal += actualPts;
+                    QUIZ_SCORE.streak++;
+                    sessionEarned += actualPts;
+                    saveQuizScore();
+                    updateScoreUI();
+                    showToast('🎉 +' + actualPts + ' 分！');
+                } else {
+                    feedback.textContent = '✅ 正确！' + q.row + ' × ' + q.col + ' = ' + q.answer + ' (已达日上限)';
+                    feedback.className = 'feedback correct';
+                    QUIZ_SCORE.streak++;
+                    updateScoreUI();
+                    showToast('🏆 今日已达 200 分上限');
+                }
                 // 自动进入下一题
                 setTimeout(() => {
                     currentIndex++;
